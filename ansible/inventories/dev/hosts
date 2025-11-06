@@ -1,0 +1,24 @@
+# Development inventory for AutoStack Deploy
+
+[all:vars]
+ansible_user=autostack
+ansible_ssh_private_key_file=~/.ssh/autostack
+
+[masters]
+# Master nodes will be added dynamically
+
+[workers]
+# Worker nodes will be added dynamically
+
+[nodes:children]
+masters
+workers
+
+[storage]
+# Storage nodes will be added dynamically
+
+[monitoring]
+# Monitoring node (typically first master)
+
+[tunnel]
+# Tunnel gateway node

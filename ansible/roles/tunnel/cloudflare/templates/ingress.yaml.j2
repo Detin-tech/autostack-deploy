@@ -1,0 +1,15 @@
+# Ingress rules for Cloudflare Tunnel
+originRequest:
+  connectTimeout: 30s
+  tlsTimeout: 10s
+
+ingress:
+  - hostname: {{ kubernetes_dashboard_hostname | default('k8s.' + domain_name) }}
+    service: https://localhost:6443
+    originRequest:
+      noTLSVerify: true
+  - hostname: {{ prometheus_hostname | default('prometheus.' + domain_name) }}
+    service: http://localhost:9090
+  - hostname: {{ grafana_hostname | default('grafana.' + domain_name) }}
+    service: http://localhost:3000
+  - service: http_status:404

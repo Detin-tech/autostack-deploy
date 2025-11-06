@@ -1,0 +1,12 @@
+# Cloudflared configuration
+logfile: /var/log/cloudflared.log
+loglevel: info
+transport-loglevel: info
+
+# Connection configuration
+hostname: {{ tunnel_hostname | default('') }}
+catch-all: {{ catch_all_enabled | default(false) }}
+origin-request:
+  connect-timeout: 30s
+  tls-timeout: 10s
+  tcp-keepalive: 30s

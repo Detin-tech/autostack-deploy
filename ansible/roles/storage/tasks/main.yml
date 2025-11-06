@@ -1,0 +1,49 @@
+# Tasks for storage configuration
+
+- name: Install ZFS utilities
+  apt:
+    name: zfsutils-linux
+    state: present
+  when: storage_type == "zfs"
+
+- name: Load ZFS kernel module
+  modprobe:
+    name: zfs
+    state: present
+  when: storage_type == "zfs"
+
+- name: Create ZFS pool
+  command: zpool create -f {{ storage_pool_name }} {{ storage_devices | join(' ') }}
+  when: 
+    - storage_type == "zfs"
+    - storage_devices is defined
+
+- name: Create ZFS filesystem
+  command: zfs create -o mountpoint={{ storage_mountpoint }} {{ storage_pool_name }}/{{ storage_dataset }}
+  when: 
+    - storage_type == "zfs"
+    - storage_pool_name is defined
+
+- name: Install Ceph packages
+  apt:
+    name:
+      - ceph
+      - ceph-common
+      - ceph-fs-common
+    state: present
+  when: storage_type == "ceph"
+
+- name: Install NFS server
+  apt:
+    name: nfs-kernel-server
+    state: present
+  when: storage_type == "nfs"
+
+- name: Configure NFS exports
+  lineinfile:
+    path: /etc/exports
+    line: "{{ storage_mountpoint }} *(rw,sync,no_root_squash,no_subtree_check)"
+  when: 
+    - storage_type == "nfs"
+    - storage_mountpoint is defined
+  notify: Restart NFS server

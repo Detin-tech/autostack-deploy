@@ -1,0 +1,38 @@
+# Example configuration for dev environment
+
+# Environment
+prefix = "autostack"
+environment = "dev"
+
+# Proxmox connection
+proxmox_endpoint = "https://proxmox.example.com:8006/api2/json"
+proxmox_username = "terraform@pve"
+proxmox_password = "your-password-here"
+proxmox_insecure = true
+
+# SSH keys
+ssh_public_key = "~/.ssh/autostack.pub"
+ssh_private_key_path = "~/.ssh/autostack"
+
+# Network
+gateway_ip = "10.0.1.1"
+network_cidr = "10.0.1.0/24"
+dns_servers = ["8.8.8.8", "1.1.1.1"]
+
+# Cluster configuration
+master_nodes_count = 1
+worker_nodes_count = 3
+node_image = "local:iso/ubuntu-22.04.img"
+master_node_flavor = "medium"
+worker_node_flavor = "large"
+
+# Storage
+storage_type = "zfs"
+storage_size = "100G"
+
+# Tunneling (optional)
+enable_tunneling = false
+tunnel_type = "cloudflare"
+
+domain_name = "example.com"
+tunnel_hostname = "autostack-tunnel.example.com"

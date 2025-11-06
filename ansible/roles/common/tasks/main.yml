@@ -1,0 +1,55 @@
+# Common tasks for all nodes
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  changed_when: false
+
+- name: Install common packages
+  apt:
+    name:
+      - curl
+      - wget
+      - vim
+      - htop
+      - net-tools
+      - iputils-ping
+      - dnsutils
+      - sudo
+      - openssh-server
+      - ca-certificates
+    state: present
+
+- name: Configure SSH daemon
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backup: yes
+  loop:
+    - { regexp: '^PermitRootLogin', line: 'PermitRootLogin no' }
+    - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+  notify: Restart sshd
+
+- name: Set timezone to UTC
+  timezone:
+    name: UTC
+
+- name: Configure hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Update /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
+    backup: yes
+  loop: "{{ groups['nodes'] }}"
+  when: hostvars[item].ansible_default_ipv4 is defined
+
+- name: Configure NTP
+  systemd:
+    name: systemd-timesyncd
+    enabled: yes
+    state: started

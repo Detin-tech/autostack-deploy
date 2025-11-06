@@ -1,0 +1,41 @@
+# Main playbook for AutoStack Deploy
+
+- name: Prepare all nodes
+  hosts: nodes
+  become: yes
+  roles:
+    - common
+
+- name: Configure storage cluster
+  hosts: storage
+  become: yes
+  roles:
+    - { role: storage, when: storage_type == 'zfs' }
+    - { role: storage, when: storage_type == 'ceph' }
+    - { role: storage, when: storage_type == 'nfs' }
+
+- name: Initialize Kubernetes masters
+  hosts: masters
+  become: yes
+  roles:
+    - kubernetes/master
+
+- name: Join Kubernetes workers
+  hosts: workers
+  become: yes
+  roles:
+    - kubernetes/worker
+
+- name: Deploy monitoring stack
+  hosts: monitoring
+  become: yes
+  roles:
+    - monitoring/prometheus
+    - monitoring/grafana
+
+- name: Configure tunneling
+  hosts: tunnel
+  become: yes
+  roles:
+    - { role: tunnel/cloudflare, when: tunnel_type == 'cloudflare' }
+    - { role: tunnel/zerotier, when: tunnel_type == 'zerotier' }

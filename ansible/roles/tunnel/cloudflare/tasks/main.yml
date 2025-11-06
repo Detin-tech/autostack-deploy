@@ -1,0 +1,68 @@
+# Tasks for configuring Cloudflare Tunnel
+
+- name: Download cloudflared
+  get_url:
+    url: https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+    dest: /tmp/cloudflared-linux-amd64.deb
+
+- name: Install cloudflared
+  apt:
+    deb: /tmp/cloudflared-linux-amd64.deb
+
+- name: Create cloudflared system user
+  user:
+    name: cloudflared
+    system: yes
+    shell: /usr/sbin/nologin
+    home: /etc/cloudflared
+    create_home: no
+
+- name: Create cloudflared configuration directory
+  file:
+    path: /etc/cloudflared
+    state: directory
+    owner: cloudflared
+    group: cloudflared
+    mode: 0755
+
+- name: Create cloudflared configuration
+  template:
+    src: config.yml.j2
+    dest: /etc/cloudflared/config.yml
+    owner: cloudflared
+    group: cloudflared
+    mode: 0600
+
+- name: Authenticate cloudflared (manual step)
+  debug:
+    msg: |
+      Manual step required:
+      1. Run: cloudflared tunnel login
+      2. Follow the URL to authenticate with Cloudflare
+      3. Then run the playbook again with --skip-tags=manual
+
+- name: Create tunnel (manual step)
+  debug:
+    msg: |
+      Manual step required:
+      1. Run: cloudflared tunnel create {{ tunnel_name }}
+      2. Note the tunnel ID for next steps
+
+- name: Configure ingress rules
+  template:
+    src: ingress.yaml.j2
+    dest: /etc/cloudflared/ingress.yaml
+    owner: cloudflared
+    group: cloudflared
+    mode: 0600
+
+- name: Install cloudflared as a service
+  command: cloudflared service install
+  environment:
+    HOME: /etc/cloudflared
+
+- name: Start and enable cloudflared service
+  systemd:
+    name: cloudflared
+    state: started
+    enabled: yes
